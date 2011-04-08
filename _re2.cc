@@ -360,9 +360,11 @@ _do_search(RegexpObject2* self, PyObject* args, PyObject* kwds, RE2::Anchor anch
     }
   }
 
+  const StringPiece text(subject+pos, endpos-pos);
   bool matched = self->re2_obj->Match(
-      StringPiece(subject+pos, endpos-pos),
-      0,  // Not sure why this arg exists.
+      text,
+      0,  // startpos
+      text.size(),  // endpos
       anchor,
       groups,
       n_groups);
