@@ -71,7 +71,7 @@ static PyObject* error_class;
 
 // Forward declarations of methods, creators, and destructors.
 static void regexp_dealloc(RegexpObject2* self);
-static PyObject* create_regexp(PyObject* pattern);
+static PyObject* create_regexp(PyObject* pattern, int max_mem);
 static PyObject* regexp_search(RegexpObject2* self, PyObject* args, PyObject* kwds);
 static PyObject* regexp_match(RegexpObject2* self, PyObject* args, PyObject* kwds);
 static PyObject* regexp_fullmatch(RegexpObject2* self, PyObject* args, PyObject* kwds);
@@ -246,7 +246,7 @@ regexp_dealloc(RegexpObject2* self)
 }
 
 static PyObject*
-create_regexp(PyObject* pattern)
+create_regexp(PyObject* pattern, int max_mem)
 {
   RegexpObject2* regexp = PyObject_New(RegexpObject2, &Regexp_Type2);
   if (regexp == NULL) {
@@ -260,6 +260,7 @@ create_regexp(PyObject* pattern)
 
   RE2::Options options;
   options.set_log_errors(false);
+  options.set_max_mem(max_mem);
 
   regexp->re2_obj = new(nothrow) RE2(StringPiece(raw_pattern, len_pattern), options);
 
@@ -693,16 +694,18 @@ _compile(RegexpObject2* self, PyObject* args, PyObject* kwds)
 {
   static const char* kwlist[] = {
     "pattern",
+    "max_mem",
     NULL};
 
   PyObject* pattern;
+  int max_mem = 8<<20;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", (char**)kwlist,
-        &pattern)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", (char**)kwlist,
+        &pattern, &max_mem)) {
     return NULL;
   }
 
-  return create_regexp(pattern);
+  return create_regexp(pattern, max_mem);
 }
 
 static PyMethodDef methods[] = {

@@ -43,9 +43,9 @@ __all__ = [
 # Module-private compilation function, for future caching, other enhancements
 _compile = _re2._compile
 
-def compile(pattern):
+def compile(pattern, max_mem=8388608):
     "Compile a regular expression pattern, returning a pattern object."
-    return _compile(pattern)
+    return _compile(pattern, max_mem)
 
 def search(pattern, string):
     """Scan through string looking for a match to the pattern, returning
